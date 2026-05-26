@@ -50,7 +50,7 @@ async def _run_migrations(db: aiosqlite.Connection, from_version: int):
         if migration_func:
             logger.info("Running migration to version %d", version)
             await migration_func(db)
-        await db.execute("UPDATE schema_version SET version = ?", (version,))
+        await db.execute("UPDATE schema_version SET version = ? WHERE version = ?", (version, version - 1))
         await db.commit()
 
 
