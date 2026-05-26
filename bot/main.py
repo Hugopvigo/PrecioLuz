@@ -5,6 +5,7 @@ import signal
 import sys
 
 from telegram.ext import ApplicationBuilder
+from telegram.request import HTTPXRequest
 
 from bot.scheduler import setup_scheduler
 from bot.db import init_db
@@ -18,13 +19,6 @@ logging.basicConfig(
 
 logger = logging.getLogger("bot.main")
 
-shutdown_event = asyncio.Event()
-
-
-def _signal_handler(_sig, _frame):
-    logger.info("Signal received, initiating graceful shutdown...")
-    shutdown_event.set()
-
 
 async def main():
     token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -34,7 +28,14 @@ async def main():
 
     await init_db()
 
-    app = ApplicationBuilder().token(token).build()
+    shutdown_event = asyncio.Event()
+
+    def _signal_handler():
+        logger.info("Signal received, initiating graceful shutdown...")
+        shutdown_event.set()
+
+    request = HTTPXRequest(connect_timeout=20, read_timeout=20, write_timeout=20)
+    app = ApplicationBuilder().token(token).request(request).build()
     register_handlers(app)
 
     scheduler = setup_scheduler(app)
