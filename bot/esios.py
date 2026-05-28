@@ -87,8 +87,8 @@ def _parse_esios_response(data: dict) -> list[dict]:
     prices = []
     for v in values:
         try:
-            # geo_id 3 = Peninsular España; ignorar Canarias, Baleares, Ceuta, Melilla
-            if v.get("geo_id") != 3:
+            # geo_id 8741 = Península; ignorar Canarias (8742), Baleares (8743), Ceuta (8744), Melilla (8745)
+            if v.get("geo_id") != 8741:
                 continue
 
             price_mwh = v["value"]
