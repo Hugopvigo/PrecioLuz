@@ -59,8 +59,8 @@ async def _handle_no_prices(app, attempt: int):
         logger.error("All %d attempts failed, notifying subscribers", MAX_ATTEMPTS)
         await _broadcast(
             app,
-            "⚠️ Los precios de mañana no están disponibles tras varios intentos. "
-            "Por favor, consúltalos manualmente mañana.",
+            "😕 Esta noche REE no ha publicado los precios de mañana a tiempo.\n"
+            "Puedes consultarlos manualmente en la web o app de tu comercializadora. ¡Hasta mañana! 👋",
         )
         return
 
@@ -71,8 +71,8 @@ async def _handle_no_prices(app, attempt: int):
         # Antes del último intento, avisamos
         await _broadcast(
             app,
-            f"Los precios de mañana aún no están publicados. "
-            f"Haré un último intento en {delay} minutos.",
+            "⏳ Los precios de mañana todavía no se han publicado, pero no te preocupes.\n"
+            "Haré un último intento a las 22:00h y te aviso en cuanto aparezcan. 🤞",
         )
 
     _schedule_retry(app, attempt=next_attempt, minutes=delay)
