@@ -16,15 +16,17 @@ MONTH_NAMES = {
 }
 
 _TRAMO_FILL = {
-    "cheap":  "🟩",
-    "medium": "🟨",
-    "dear":   "🟥",
+    "cheap":      "🟩",
+    "affordable": "🟨",
+    "medium":     "🟧",
+    "dear":       "🟥",
 }
 
 _TRAMO_ICON = {
-    "cheap":  "🟢",
-    "medium": "🟡",
-    "dear":   "🔴",
+    "cheap":      "🟢",
+    "affordable": "🟡",
+    "medium":     "🟠",
+    "dear":       "🔴",
 }
 
 
@@ -40,8 +42,9 @@ def format_message(prices: list[dict], date_str: str) -> str:
     avg_price = sum(p["price_kwh"] for p in prices) / len(prices)
 
     n = len(prices)
-    cheap_threshold = sorted_prices[n // 3]["price_kwh"]
-    expensive_threshold = sorted_prices[2 * n // 3]["price_kwh"]
+    t1 = sorted_prices[n // 4]["price_kwh"]      # 25% — barato
+    t2 = sorted_prices[n // 2]["price_kwh"]       # 50% — asequible
+    t3 = sorted_prices[3 * n // 4]["price_kwh"]   # 75% — medio
 
     min_price = sorted_prices[0]["price_kwh"]
     max_price = sorted_prices[-1]["price_kwh"]
@@ -61,9 +64,11 @@ def format_message(prices: list[dict], date_str: str) -> str:
         hour = p["hour"]
         price = p["price_kwh"]
 
-        if price <= cheap_threshold:
+        if price <= t1:
             tramo = "cheap"
-        elif price <= expensive_threshold:
+        elif price <= t2:
+            tramo = "affordable"
+        elif price <= t3:
             tramo = "medium"
         else:
             tramo = "dear"
