@@ -60,7 +60,7 @@ async def _handle_no_prices(app, attempt: int):
         await _broadcast(
             app,
             "😕 Esta noche REE no ha publicado los precios de mañana a tiempo.\n"
-            "Puedes consultarlos manualmente en la web o app de tu comercializadora. ¡Hasta mañana! 👋",
+            "Puedes consultarlos con el comando /precio mañana o en la app de tu comercializadora. ¡Hasta mañana! 👋",
         )
         return
 
