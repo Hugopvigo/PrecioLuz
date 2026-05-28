@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -7,7 +8,7 @@ logger = logging.getLogger("bot.db")
 
 DB_PATH = os.getenv("DB_PATH", "/data/subscribers.db")
 
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
 
 
 async def _get_connection() -> aiosqlite.Connection:
@@ -58,8 +59,19 @@ async def _migration_1(db: aiosqlite.Connection):
     pass
 
 
+async def _migration_2(db: aiosqlite.Connection):
+    await db.execute("""
+        CREATE TABLE IF NOT EXISTS prices (
+            date TEXT PRIMARY KEY,
+            data TEXT NOT NULL,
+            saved_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+        )
+    """)
+
+
 _MIGRATIONS = {
     1: _migration_1,
+    2: _migration_2,
 }
 
 
@@ -83,6 +95,22 @@ async def is_subscribed(chat_id: int) -> bool:
         cursor = await db.execute("SELECT 1 FROM subscribers WHERE chat_id = ?", (chat_id,))
         row = await cursor.fetchone()
         return row is not None
+
+
+async def get_prices(date: str) -> list[dict] | None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT data FROM prices WHERE date = ?", (date,))
+        row = await cursor.fetchone()
+        return json.loads(row[0]) if row else None
+
+
+async def save_prices(date: str, prices: list[dict]):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT OR REPLACE INTO prices (date, data) VALUES (?, ?)",
+            (date, json.dumps(prices)),
+        )
+        await db.commit()
 
 
 async def get_all_subscribers() -> list[tuple[int, str | None]]:
